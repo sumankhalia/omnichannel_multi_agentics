@@ -10,11 +10,24 @@ from utils.data_generator import generate_data
 
 app = FastAPI()
 
-# ALWAYS CREATE TABLES (Safe operation)
+
+# -----------------------------
+# ROOT / HEALTH ENDPOINT
+# -----------------------------
+@app.get("/")
+def home():
+    return {
+        "status": "healthy",
+        "service": "Omnichannel Multi-Agentics API"
+    }
+
+
+# -----------------------------
+# DATABASE SETUP
+# -----------------------------
 Base.metadata.create_all(bind=engine)
 
 
-# SEED DATA ONLY IF EMPTY
 def initialize_database():
 
     db = SessionLocal()
@@ -23,10 +36,10 @@ def initialize_database():
         customer_count = db.query(Customer).count()
 
         if customer_count == 0:
-            print("🔥 EMPTY DATABASE DETECTED → GENERATING SAMPLE DATA")
+            print("EMPTY DATABASE DETECTED → GENERATING SAMPLE DATA")
             generate_data()
         else:
-            print(f"✅ DATABASE READY → {customer_count} customers loaded")
+            print(f"DATABASE READY → {customer_count} customers loaded")
 
     finally:
         db.close()
@@ -36,5 +49,7 @@ def initialize_database():
 initialize_database()
 
 
-# REGISTER ROUTES
+# -----------------------------
+# ROUTES
+# -----------------------------
 app.include_router(router)

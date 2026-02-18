@@ -1,12 +1,11 @@
 # -----------------------------
-# 🔥 ENVIRONMENT VARIABLES
+# ENVIRONMENT VARIABLES
 # -----------------------------
 .env
 
 # -----------------------------
-# 🔥 DATABASE FILES
+# DATABASE FILES
 # -----------------------------
-*.db
 *.sqlite
 *.sqlite3
 
