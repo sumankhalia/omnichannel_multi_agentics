@@ -1,5 +1,3 @@
-fastapi
-uvicorn
 sqlalchemy
 pandas
 numpy
@@ -8,4 +6,3 @@ plotly
 openai
 python-dotenv
 streamlit
-sqlite3
