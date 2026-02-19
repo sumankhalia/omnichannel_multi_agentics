@@ -1,56 +1,90 @@
-import plotly.express as px
-import pandas as pd
-from database.db_engine import SessionLocal
-from database.models import Customer
+from core.llm.model_registry import get_client, get_model
+import numpy as np
+
+client = get_client()
+
+VALID_CHARTS = {"bar", "line", "scatter", "pie", "heatmap"}
 
 
-class ChartAgent:
+def select_chart(user_query, df):
 
-    def generate_chart(self, query):
+    query_lower = user_query.lower()
 
-        print("\nCHART AGENT ACTIVE")
-        print("Query:", query)
+    numeric_cols = df.select_dtypes(include=np.number).columns
+    categorical_cols = df.select_dtypes(exclude=np.number).columns
 
-        db = SessionLocal()
+    # ---------------------------------------------------
+    # RULE-BASED INTELLIGENCE (PRIMARY — STABLE)
+    # ---------------------------------------------------
 
-        try:
+    if df.empty:
+        return "bar"
 
-            customers = db.query(Customer).all()
+    # Trend / Time logic
+    if "trend" in query_lower or "over time" in query_lower:
+        if len(numeric_cols) >= 1:
+            return "line"
 
-            data = [
-                {
-                    "persona": c.persona,
-                    "churn_risk": getattr(c, "churn_risk", 0.0)
-                }
-                for c in customers
-            ]
+    # Distribution logic
+    if "distribution" in query_lower:
+        return "bar"
 
-            df = pd.DataFrame(data)
+    # Comparison logic
+    if "by" in query_lower or "compare" in query_lower:
+        if len(categorical_cols) >= 1:
+            return "bar"
 
-            query_lower = query.lower()
+    # Relationship logic
+    if len(numeric_cols) >= 2:
+        if "correlation" in query_lower or "relationship" in query_lower:
+            return "scatter"
 
-            if "churn" in query_lower:
+    # Heatmap logic
+    if len(numeric_cols) >= 2 and len(categorical_cols) >= 1:
+        if "heatmap" in query_lower:
+            return "heatmap"
 
-                churn_by_persona = (
-                    df.groupby("persona")["churn_risk"]
-                    .mean()
-                    .reset_index()
-                )
+    # Pie logic
+    if len(categorical_cols) >= 1 and len(numeric_cols) >= 1:
+        if "share" in query_lower or "mix" in query_lower:
+            return "pie"
 
-                fig = px.bar(
-                    churn_by_persona,
-                    x="persona",
-                    y="churn_risk"
-                )
+    # ---------------------------------------------------
+    # LLM FALLBACK (SECONDARY — FLEXIBLE)
+    # ---------------------------------------------------
 
-            else:
+    try:
 
-                fig = px.histogram(df, x="persona")
+        prompt = f"""
+You are a visualization intelligence agent.
 
-            return {
-                "type": "chart",
-                "data": fig.to_json()
-            }
+Return ONLY ONE WORD:
 
-        finally:
-            db.close()
+bar
+line
+scatter
+pie
+heatmap
+
+Business Question:
+{user_query}
+
+Dataset Columns:
+{list(df.columns)}
+"""
+
+        response = client.chat.completions.create(
+            model=get_model("chart_agent"),
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        chart_type = response.choices[0].message.content.strip().lower()
+
+        if chart_type not in VALID_CHARTS:
+            chart_type = "bar"
+
+        return chart_type
+
+    except Exception:
+
+        return "bar"

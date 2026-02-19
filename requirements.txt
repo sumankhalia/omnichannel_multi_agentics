@@ -7,3 +7,5 @@ faker
 plotly
 openai
 python-dotenv
+streamlit
+sqlite3
