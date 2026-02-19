@@ -6,3 +6,8 @@ plotly
 openai
 python-dotenv
 streamlit
+fastapi
+uvicorn
+scikit-learn
+scipy
+fastapi
