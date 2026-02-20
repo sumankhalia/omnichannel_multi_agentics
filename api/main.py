@@ -6,11 +6,11 @@ from core.agents.insight_agent import ask_with_data
 from core.agents.war_room_agent import run_war_room
 from api.routes.analytics_routes import router as analytics_router
 
-# Optional (only if using SQLAlchemy DB)
+# Database
 from database.db_engine import engine
 from database.models import Base
 
-# Optional (only if using seed logic)
+# Seed logic
 from utils.data_generator import generate_data
 
 
@@ -24,20 +24,22 @@ app = FastAPI(
     version="1.0"
 )
 
+
 # =====================================================
 # CORS CONFIGURATION (FOR REACT / FRONTENDS)
 # =====================================================
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],     # Dev mode → restrict later
+    allow_origins=["*"],     # Restrict later for production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+
 # =====================================================
-# DATABASE INITIALIZATION (SAFE + PROFESSIONAL)
+# DATABASE INITIALIZATION (SAFE + NON-BLOCKING)
 # =====================================================
 
 @app.on_event("startup")
@@ -49,11 +51,25 @@ def startup_event():
         Base.metadata.create_all(bind=engine)
         print("Database schema verified")
 
-        generate_data()
-        print("Demo data ready")
+        print("Startup Completed")
 
     except Exception as e:
         print("Startup Error:", str(e))
+
+
+# =====================================================
+# OPTIONAL → MANUAL DATA SEEDING (PROPER DESIGN)
+# =====================================================
+
+@app.get("/seed")
+def seed_data():
+
+    try:
+        generate_data()
+        return {"status": "Demo data generated ✅"}
+
+    except Exception as e:
+        return {"error": str(e)}
 
 
 # =====================================================
