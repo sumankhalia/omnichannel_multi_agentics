@@ -10,4 +10,4 @@ fastapi
 uvicorn
 scikit-learn
 scipy
-fastapi
+gunicorn==25.1.0
