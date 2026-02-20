@@ -1,16 +1,12 @@
 from core.llm.model_registry import get_client, get_model
 from analytics.query_engine import run_query
-from core.agents.insight_agent import generate_sql, interpret_results
+from core.agents.insight_agent import generate_sql, interpret_results, summarize_dataframe
 
 client = get_client()
 
 # =========================================================
-# WAR ROOM INTELLIGENCE SYSTEM
-# =========================================================
-
-# ---------------------------------------------------------
 # SPECIALIST OPINION AGENT
-# ---------------------------------------------------------
+# =========================================================
 
 def specialist_agent(role, question, df):
 
@@ -27,8 +23,8 @@ STRICT RULES:
 Strategic Question:
 {question}
 
-Data Snapshot:
-{df.to_string()}
+Data Snapshot (summarised):
+{summarize_dataframe(df)}
 
 Return ONLY bullet points.
 """
@@ -41,9 +37,9 @@ Return ONLY bullet points.
     return response.choices[0].message.content
 
 
-# ---------------------------------------------------------
-# DEBATE ENGINE AGENT
-# ---------------------------------------------------------
+# =========================================================
+# DEBATE ENGINE
+# =========================================================
 
 def debate_agent(question, opinions):
 
@@ -76,16 +72,14 @@ DEBATE HIGHLIGHTS:
     return response.choices[0].message.content
 
 
-# ---------------------------------------------------------
-# CONFIDENCE + DISAGREEMENT AGENT
-# ---------------------------------------------------------
+# =========================================================
+# CONFIDENCE AGENT
+# =========================================================
 
 def confidence_agent(question, synthesis):
 
     prompt = f"""
 You are a Decision Intelligence Agent.
-
-Evaluate the reliability of this conclusion.
 
 STRICT RULES:
 Return ONLY:
@@ -109,9 +103,9 @@ Conclusion:
     return response.choices[0].message.content
 
 
-# ---------------------------------------------------------
-# RISK vs GROWTH TENSION AGENT
-# ---------------------------------------------------------
+# =========================================================
+# STRATEGIC TENSION AGENT
+# =========================================================
 
 def tension_agent(question, opinions):
 
@@ -139,9 +133,9 @@ Opinions:
     return response.choices[0].message.content
 
 
-# ---------------------------------------------------------
+# =========================================================
 # WAR ROOM MASTER ENGINE
-# ---------------------------------------------------------
+# =========================================================
 
 def run_war_room(user_query, market_context=None):
 
