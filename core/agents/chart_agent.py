@@ -13,44 +13,40 @@ def select_chart(user_query, df):
     numeric_cols = df.select_dtypes(include=np.number).columns
     categorical_cols = df.select_dtypes(exclude=np.number).columns
 
-    # ---------------------------------------------------
-    # RULE-BASED INTELLIGENCE (PRIMARY — STABLE)
-    # ---------------------------------------------------
-
-    if df.empty:
+    if df is None or df.empty:
         return "bar"
 
-    # Trend / Time logic
+    # ✅ Trend / Time logic
     if "trend" in query_lower or "over time" in query_lower:
         if len(numeric_cols) >= 1:
             return "line"
 
-    # Distribution logic
+    # ✅ Distribution logic
     if "distribution" in query_lower:
         return "bar"
 
-    # Comparison logic
+    # ✅ Comparison logic
     if "by" in query_lower or "compare" in query_lower:
         if len(categorical_cols) >= 1:
             return "bar"
 
-    # Relationship logic
+    # ✅ Relationship logic
     if len(numeric_cols) >= 2:
         if "correlation" in query_lower or "relationship" in query_lower:
             return "scatter"
 
-    # Heatmap logic
+    # ✅ Heatmap logic
     if len(numeric_cols) >= 2 and len(categorical_cols) >= 1:
         if "heatmap" in query_lower:
             return "heatmap"
 
-    # Pie logic
+    # ✅ Pie logic
     if len(categorical_cols) >= 1 and len(numeric_cols) >= 1:
         if "share" in query_lower or "mix" in query_lower:
             return "pie"
 
     # ---------------------------------------------------
-    # LLM FALLBACK (SECONDARY — FLEXIBLE)
+    # ✅ LLM FALLBACK
     # ---------------------------------------------------
 
     try:
@@ -86,5 +82,4 @@ Dataset Columns:
         return chart_type
 
     except Exception:
-
         return "bar"

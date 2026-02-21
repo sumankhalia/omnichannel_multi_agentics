@@ -1,11 +1,13 @@
 from core.llm.model_registry import get_client, get_model
 from analytics.query_engine import run_query
 from core.agents.chart_agent import select_chart
+from core.agents.chart_formatter import normalize_chart_data
 
 client = get_client()
 
+
 # =========================================================
-# DATASET SUMMARIZER (TOKEN SAFE)
+# DATASET SUMMARIZER
 # =========================================================
 
 def summarize_dataframe(df):
@@ -26,7 +28,6 @@ Column Summary:
     return summary
 
 
-# Backward compatibility (VERY IMPORTANT)
 def summarise_dataframe(df):
     return summarize_dataframe(df)
 
@@ -42,11 +43,7 @@ Convert this business question into SQL.
 
 STRICT RULES:
 - Database Type: SQLite
-- Use SQLite-compatible syntax ONLY
-- DO NOT use INTERVAL
-- DO NOT use FILTER
-- DO NOT use NOW()
-- Use datetime() functions when needed
+- SQLite syntax ONLY
 
 Tables:
 customers(customer_id, signup_date, persona, churn_risk, preferred_channel, age)
@@ -68,7 +65,7 @@ Return ONLY SQL.
 
 
 # =========================================================
-# RESULT INTERPRETATION
+# INTERPRETATION
 # =========================================================
 
 def interpret_results(user_query, sql_query, df, market_context=None):
@@ -78,7 +75,7 @@ def interpret_results(user_query, sql_query, df, market_context=None):
     interpretation_prompt = f"""
 You are an Executive Business Intelligence AI.
 
-STRICT RESPONSE RULES:
+STRICT FORMAT:
 
 EXECUTIVE SUMMARY:
 (max 3 lines)
@@ -102,9 +99,6 @@ SQL Used:
 
 Dataset Summary:
 {dataset_summary}
-
-Market Context:
-{market_context if market_context else "None"}
 """
 
     response = client.chat.completions.create(
@@ -136,7 +130,7 @@ def ask_with_data(user_query, market_context=None):
         return {
             "insight": result,
             "chart": None,
-            "data": None,
+            "data": [],
             "thinking": thinking_log
         }
 
@@ -149,6 +143,9 @@ def ask_with_data(user_query, market_context=None):
     return {
         "insight": insight,
         "chart": chart,
-        "data": result,
+
+        # ✅ CRITICAL FIX
+        "data": normalize_chart_data(result),
+
         "thinking": thinking_log
     }
