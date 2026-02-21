@@ -197,11 +197,15 @@ def run_war_room(user_query, market_context=None):
 
     thinking_log.append("War Room analysis complete.")
 
+    #FIX → SAFE DATAFRAME SERIALIZATION
+    clean_df = df.astype(object)
+    clean_df = clean_df.where(clean_df.notnull(), None)
+
     return {
         "insight": synthesis,
         "debate": debate,
         "confidence": confidence,
         "tension": tension,
-        "data": df,
+        "data": clean_df.to_dict(orient="records"),
         "thinking": thinking_log
     }
