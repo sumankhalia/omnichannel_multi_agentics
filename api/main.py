@@ -26,12 +26,18 @@ app = FastAPI(
 
 
 # =====================================================
-# CORS CONFIGURATION (FOR REACT / FRONTENDS)
+# ✅ CORS CONFIGURATION (CRITICAL FIX)
 # =====================================================
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],     # Restrict later for production
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+
+        # Optional → Your deployed frontend later
+        # "https://your-frontend-url.onrender.com",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -58,7 +64,7 @@ def startup_event():
 
 
 # =====================================================
-# OPTIONAL → MANUAL DATA SEEDING (PROPER DESIGN)
+# OPTIONAL → MANUAL DATA SEEDING
 # =====================================================
 
 @app.get("/seed")
@@ -95,6 +101,7 @@ class QueryRequest(BaseModel):
 @app.get("/")
 def root():
     return {"status": "ENGINE_RUNNING"}
+
 
 @app.get("/health")
 def health_check():
