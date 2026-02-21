@@ -3,6 +3,7 @@ from analytics.query_engine import run_query
 from core.agents.insight_agent import generate_sql, interpret_results, summarize_dataframe
 from core.agents.chart_agent import select_chart
 from core.agents.chart_formatter import normalize_chart_data
+from core.agents.sql_sanitizer import sanitize_sql
 
 client = get_client()
 
@@ -45,7 +46,7 @@ def run_war_room(user_query, market_context=None):
 
     thinking_log.append("War Room activated.")
 
-    sql_query = generate_sql(user_query)
+    sql_query = sanitize_sql(generate_sql(user_query))
 
     thinking_log.append("SQL generated.")
     thinking_log.append(sql_query)
@@ -54,12 +55,15 @@ def run_war_room(user_query, market_context=None):
 
     if isinstance(df, str):
 
-        return {
-            "insight": df,
-            "chart": None,
-            "data": [],
-            "thinking": thinking_log
-        }
+     thinking_log.append("SQL execution failed.")
+
+     return {
+        "insight": "Query execution failed. Adjusting analytical strategy recommended.",
+        "error": df,
+        "thinking": thinking_log,
+        "data": None,
+        "chart": None
+    }
 
     roles = [
         "Growth Strategist",

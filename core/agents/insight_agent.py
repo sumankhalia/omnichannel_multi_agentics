@@ -43,7 +43,15 @@ Convert this business question into SQL.
 
 STRICT RULES:
 - Database Type: SQLite
-- SQLite syntax ONLY
+- SINGLE SELECT statement ONLY
+- NO WITH / NO CTE
+- NO DISTINCT
+- DO NOT use INTERVAL
+- DO NOT use FILTER
+- DO NOT use NOW()
+- Use datetime() functions when needed
+- KEEP QUERY SIMPLE
+- Use only basic COUNT / SUM / AVG / GROUP BY
 
 Tables:
 customers(customer_id, signup_date, persona, churn_risk, preferred_channel, age)
